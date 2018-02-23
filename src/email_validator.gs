@@ -1,19 +1,28 @@
 /****************************************************************
  * EmailsValidator library
  *
- * Return a list of valid email addresses
- * contained in a given the string
+ * Returns a list of valid email addresses
+ * contained in a given string
  * -- Created for Yet Another Mail Merge --
  *
  * cleanUpEmailList()
  * _validateEmail()
  * _removeDiacritics()
  *****************************************************************/
-
 var EmailsValidator = {};
 
 /**
- * @param {emails} String - a string containing email addresses
+ * Returns a list of valid email addresses contained in a given string
+ * while accepting the syntax "User Name" <someone@gmail.com>
+
+ * @example
+ * // returns "me@gmail.com,other@gmail.com"
+ * EmailsValidator.cleanUpEmailList("me@gmail.com, some text, other@gmail.com");
+ * @example
+ * // returns "me@gmail.com,eleve1@gmail.com"
+ * EmailsValidator.cleanUpEmailList("me@gmail.com, �l�ve1@gmail.com");
+
+ * @param {String} emails - a string containing email addresses
  * @return {String} a list of valid email addresses
  */
 EmailsValidator.cleanUpEmailList = function (emails) {
@@ -86,6 +95,7 @@ EmailsValidator._validateEmail = function (email) {
 	return re.test(email);
 };
 
+// From https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
 EmailsValidator._removeDiacritics = function (str) {
 	str = str.toLowerCase();
 	var defaultDiacriticsRemovalap = [
