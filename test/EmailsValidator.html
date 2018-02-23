@@ -50,7 +50,7 @@
 	<script>
 		// All the tests to run
 		var allTests = {
-		  simpleEmail: {
+		  doubleEmail: {
 		    _in: 'aaaaaa.qsd@azeraezr.com, qqqqqqqqq@toto.Com',
 			  out: 'aaaaaa.qsd@azeraezr.com,qqqqqqqqq@toto.com'
 		  },
@@ -73,6 +73,10 @@
 			quote: {
 		    _in: '"ron.vird@gil.com" <ron.lard@gml.com>, aze "ron.vird@gil.com" <ron.lard@gml.com>',
 				out: '"ron.vird@gil.com" <ron.lard@gml.com>,"ron.vird@gil.com" <ron.lard@gml.com>'
+			},
+			simpleEmail: {
+		    _in: 'rom.vialard@gmail.com',
+				out: 'rom.vialard@gmail.com'
 			}
 		};
     

@@ -107,7 +107,7 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbag
 
 EmailsValidator._REGEX_SEPARATE_EMAILS = /([^@"]*?"([^"]*)"\s+<([^@]+?@[^@]+?)|[^@]+?@[^@]+?)(?:[,;\s\/]+|$)/g;
 EmailsValidator._REGEX_EXTRACT_INFO = /(.*?)((?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*))@(.+)$/;
-EmailsValidator._REGEX_FIND_EMAIL = /(?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*)@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+EmailsValidator._REGEX_FIND_EMAIL = /[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
 
 
