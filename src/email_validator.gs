@@ -26,10 +26,10 @@ var EmailsValidator = {};
  * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
  
  * @param {string} emails - a string containing email addresses
- * 
+ *
  * @param {object} [options] - Options for email cleaning
- * @param {boolean} [options.onlyReturnEmails] - Set to true to remove any associated display name, eg: "toto Shinnigan <user@gmail.com>" --> "user@gmail.com"
- * @param {boolean} [options.addDisplayNames] - Set to true to generate display names for all addresses, eg: "toto.shinnigan@gmail.com" --> "Toto Shinnigan <toto.shinnigan@gmail.com>"
+ * @param {boolean} [options.onlyReturnEmails] - Set to true to remove any associated display name, eg: toto Shinnigan <user@gmail.com> --> user@gmail.com
+ * @param {boolean} [options.addDisplayNames] - Set to true to generate display names for all addresses, eg: toto.shinnigan@gmail.com --> "Toto Shinnigan" <toto.shinnigan@gmail.com>
  * @param {boolean} [options.logGarbage] - Log all entries not containing a valid email
  *
  * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
@@ -107,14 +107,9 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
       // Add a displayName from localPart if necessary
       if (!displayName && options.addDisplayNames) {
         // Apply Title Case: toto shinnigan-michel --> Toto Shinnigan-Michel
-        displayName = localPart.split('.')
-          .map(function (x) { return x[0].toUpperCase() + x.slice(1) })
-          .join(' ')
-          .split('-')
-          .map(function (x) { return x[0].toUpperCase() + x.slice(1) })
-          .join('-');
+        displayName = EmailsValidator.generateDisplayName(localPart);
       }
-        
+      
       displayName && (email ='"'+ displayName +'" <'+ email +'>');
     }
     
@@ -123,6 +118,30 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
   }
   
   return validFields;
+};
+
+/**
+ * Generate a display name from the local part of an email.
+ * Words will be capitalized when separated by '.' or '-'
+ *
+ * @param {string} email
+ *
+ * @return {string} name extracted from email ("example.foo@domain.com" --> "Example Foo")
+ */
+EmailsValidator.generateDisplayName = function(email) {
+  var localPart = email.split('@')[0];
+  
+  // Capitalize by '.' and replace '.' by spaces
+  var displayName = localPart.split('.')
+    .map(function (x) { return x[0].toUpperCase() + x.slice(1) })
+    .join(' ');
+  
+  // Capitalize by '-'
+  displayName = displayName.split('-')
+    .map(function (x) { return x[0].toUpperCase() + x.slice(1) })
+    .join('-');
+  
+  return displayName;
 };
 
 /**
