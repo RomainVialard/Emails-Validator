@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>EmailsValidator tests</title>
+	
+	<script src="../src/Libraries/Emails%20Validator.js"></script>
+	
+	<style>
+		#tests{
+			padding: 5px;
+		}
+		
+		.test{
+			display: block;
+			padding: 8px;
+			background-color: #efefef;
+		}
+		.test:nth-child(2n){
+			background-color: #d5d5d5;
+		}
+		
+		.arrow{
+			font-weight: bold;
+		}
+		.test.failed .arrow{
+			color: red;
+		}
+		.test.success .arrow{
+			color: #00d700;
+		}
+		
+	</style>
+</head>
+<body>
+	<div id="tests">
+		
+	</div>
+	
+	<script>
+		// All the tests to run
+		var allTests = {
+		  simpleEmail: {
+		    _in: 'aaaaaa.qsd@azeraezr.com, qqqqqqqqq@toto.Com',
+			  out: 'aaaaaa.qsd@azeraezr.com,qqqqqqqqq@toto.com'
+		  },
+			emailWithName: {
+		    _in: 'toto Shinnigan <toto.shinnigan@gmail.COM>, otherEmail@test.toto',
+				out: 'toto Shinnigan <toto.shinnigan@gmail.com>,otheremail@test.toto'
+			},
+			emailSalesForce: {
+		    _in: 'toto Shinnigan <emailtosalesforce@totoazertyui.salesforce.cOm>, otherEmail@test.toto',
+				out: 'toto Shinnigan <emailtosalesforce@totoazertyui.salesforce.com>,otheremail@test.toto'
+		  },
+			diacritics: {
+		    _in: '\u00F2th\u1EC1rEma\u00ECl@t\u0065st.t\u1ED1to',
+				out: 'otheremail@test.toto'
+		  }
+		};
+    
+    
+    /**
+     * Show the test result in the HTML page
+     * 
+     * @param {{
+     *   failed: boolean,
+     *   input: string,
+     *   output: string
+     * }} res
+     */
+		function displayTestResult(res){
+		  var domAllTests = document.getElementById('tests');
+		  
+		  var domTest = document.createElement('code');
+      domTest.classList.add('test');
+      domTest.classList.add(res.failed ? 'failed' : 'success');
+  
+	    domTest.innerHTML = '<div class="input"></div>' +
+	                        '<div><span class="arrow"> => </span><span class="output"></span></div>';
+      
+      domTest.querySelector('.input').innerText = res.input;
+      domTest.querySelector('.output').innerText = res.output;
+  
+      domAllTests.appendChild(domTest);
+    }
+		
+    
+    /**
+     * Run all tests
+     * 
+     * @param {Object} tests
+     */
+		function runTest(tests){
+		  
+		  for (var testName in tests){
+        var res,
+            failed = false;
+		    
+		    try {
+		      res = {
+            output: EmailsValidator.cleanUpEmailList(tests[testName]._in)
+          };
+		      
+		      if (res.output !== tests[testName].out){
+            failed = true;
+		        
+            res.expect = tests[testName].out;
+          }
+		      
+          res.state = failed ? 'FAILED' : 'SUCCESS';
+          
+          res = JSON.stringify(res, null, '\t');
+        }
+		    catch (err){
+          console.error(err.stack);
+		      
+		      res = err;
+          failed = true;
+		    }
+		    
+		    displayTestResult({
+			    failed: failed,
+			    input: tests[testName]._in,
+			    output: res
+		    });
+		  }
+		  
+		}
+		
+		runTest(allTests);
+	</script>
+</body>
+</html>
