@@ -23,15 +23,17 @@ var EmailsValidator = {};
  *
  * @example
  * // returns "me@gmail.com,eleve1@gmail.com"
- * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
+ * EmailsValidator.cleanUpEmailList("me@gmail.com, �l�ve1@gmail.com");
  
  * @param {string} emails - a string containing email addresses
- * @param {boolean} [onlyReturnEmails] - Set to true to remove any provided names, eg: "toto Shinnigan <toto.shinnigan@gmail.com>" --> "toto.shinnigan@gmail.com"
+ * @param {boolean} [onlyReturnEmails] - Set to true to remove any associated display name, eg: "toto Shinnigan <user@gmail.com>" --> "user@gmail.com"
  * @param {boolean} [logGarbage] - Log all entries not containing a valid email
+ * @param {boolean} [addDisplayNames] - Set to true to generate display names for all addresses, eg: "toto.shinnigan@gmail.com" --> "Toto Shinnigan <toto.shinnigan@gmail.com>"
  *
  * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
  */
-EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbage) {
+EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbage, addDisplayNames) {
+  if (onlyReturnEmails && addDisplayNames) throw new Error("Can't set both @onlyReturnEmails & @addDisplayNames to true");
   onlyReturnEmails = onlyReturnEmails || false;
   
   // Remove double @ (yes, we have to do this...)
@@ -92,6 +94,14 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbag
       // Try to prepare the displayName if any
       displayName = quotedPart || displayName.replace(/["<>]/g, '').trim();
       
+      if (!displayName && addDisplayNames) {
+        displayName = localPart.replace(/\./g, ' ');
+        // Apply Title Case: toto shinnigan --> Toto Shinnigan
+        displayName = displayName.split(' ').map(function (x) {
+          return x[0].toUpperCase() + x.slice(1)
+        }).join(' ');
+      }
+        
       displayName && (email ='"'+ displayName +'" <'+ email +'>');
     }
     
@@ -124,7 +134,7 @@ EmailsValidator._validateEmail = function (email) {
 EmailsValidator._REGEX_VALID_EMAIL = /^(?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*)@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 /**
- * Replace accentuated letters (diacritics) by their non-accentuated counter part (à -> a)
+ * Replace accentuated letters (diacritics) by their non-accentuated counter part (� -> a)
  *
  * Reference: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
  *
