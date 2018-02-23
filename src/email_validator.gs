@@ -23,7 +23,7 @@ var EmailsValidator = {};
  *
  * @example
  * // returns "me@gmail.com,eleve1@gmail.com"
- * EmailsValidator.cleanUpEmailList("me@gmail.com, �l�ve1@gmail.com");
+ * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
  
  * @param {string} emails - a string containing email addresses
  * 
@@ -36,6 +36,7 @@ var EmailsValidator = {};
  */
 EmailsValidator.cleanUpEmailList = function (emails, options) {
   // Set default options value
+  options = options || {};
   options = {
     onlyReturnEmails: options.onlyReturnEmails || false,
     addDisplayNames: options.addDisplayNames || false,
@@ -145,7 +146,7 @@ EmailsValidator._REGEX_VALID_EMAIL = /^[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,
 EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
 
 /**
- * Replace accentuated letters (diacritics) by their non-accentuated counter part (� -> a)
+ * Replace accentuated letters (diacritics) by their non-accentuated counter part (à -> a)
  *
  * Reference: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
  *
