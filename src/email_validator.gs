@@ -29,7 +29,7 @@ var EmailsValidator = {};
  * @param {boolean} [onlyReturnEmails] - Set to true to remove any provided names, eg: "toto Shinnigan <toto.shinnigan@gmail.com>" --> "toto.shinnigan@gmail.com"
  * @param {boolean} [pleaseLogInvalidEmail]
  *
- * @return {string} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
+ * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
  */
 EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLogInvalidEmail) {
   onlyReturnEmails = onlyReturnEmails || false;
@@ -37,8 +37,8 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLog
   // Remove double @ (yes, we have to do this...)
   emails = emails.replace('@@', '@');
   
-  // If no @, no valid address, return empty string
-  if (emails.indexOf('@') === -1) return '';
+  // If no @, no valid address, quit early
+  if (emails.indexOf('@') === -1) return [];
   
   // One time init the diacritics map
   EmailsValidator._initDiacriticsMap();
@@ -99,7 +99,7 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLog
     validField.push(email);
   }
   
-  return validField.join(',');
+  return validField;
 };
 
 
