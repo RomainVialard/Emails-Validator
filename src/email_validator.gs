@@ -27,11 +27,11 @@ var EmailsValidator = {};
  
  * @param {string} emails - a string containing email addresses
  * @param {boolean} [onlyReturnEmails] - Set to true to remove any provided names, eg: "toto Shinnigan <toto.shinnigan@gmail.com>" --> "toto.shinnigan@gmail.com"
- * @param {boolean} [pleaseLogInvalidEmail]
+ * @param {boolean} [logGarbage] - Log all entries not containing a valid email
  *
  * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
  */
-EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLogInvalidEmail) {
+EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbage) {
   onlyReturnEmails = onlyReturnEmails || false;
   
   // Remove double @ (yes, we have to do this...)
@@ -45,7 +45,7 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLog
   
   var regEmailSeparator = new RegExp(EmailsValidator._REGEX_SEPARATE_EMAILS);
   var extractRes;
-  var validField = [];
+  var validFields = [];
   
   // Extract and separate every email like field
   while (extractRes = regEmailSeparator.exec(emails)){
@@ -55,10 +55,10 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLog
     // Search for the email: separate the content
     var res = EmailsValidator._REGEX_EXTRACT_INFO.exec(emailPart || field);
     
-    // Safety check (will happens if no valid first email part is found)
+    // Safety check (will happens if no valid localPart is found)
     if (!res){
       // Log for reference
-      pleaseLogInvalidEmail && console.info({
+      logGarbage && console.info({
         message: 'EmailsValidator: invalid field',
         field: field
       });
@@ -67,18 +67,18 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLog
     }
     
     // noinspection JSAnnotator
-    var [/* full matching string */, nameInfo, firstEmailPart, rest] = res;
+    var [/* full matching string */, displayName, localPart, rest] = res;
     
     // Prepare email part
-    var email = EmailsValidator._removeDiacritics(firstEmailPart +'@'+ rest);
+    var email = EmailsValidator._removeDiacritics(localPart +'@'+ rest);
     var emailRes = EmailsValidator._REGEX_FIND_EMAIL.exec(email);
     
     // no valid email found even after removing the diacritics
-    if (!email){
+    if (!emailRes){
       // Log for reference
-      pleaseLogInvalidEmail && console.info({
+      logGarbage && console.info({
         message: 'EmailsValidator: invalid email',
-        email: firstEmailPart +'@'+ rest
+        email: localPart +'@'+ rest
       });
       
       continue;
@@ -89,17 +89,17 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLog
     
     
     if (!onlyReturnEmails){
-      // Try to prepare the nameInfo if any
-      nameInfo = quotedPart || nameInfo.replace(/["<>]/g, '').trim();
+      // Try to prepare the displayName if any
+      displayName = quotedPart || displayName.replace(/["<>]/g, '').trim();
       
-      nameInfo && (email ='"'+ nameInfo +'" <'+ email +'>');
+      displayName && (email ='"'+ displayName +'" <'+ email +'>');
     }
     
     // Save final result
-    validField.push(email);
+    validFields.push(email);
   }
   
-  return validField;
+  return validFields;
 };
 
 
