@@ -1,6 +1,6 @@
 {
 	"name": "@scriptaddicts/gas-email-validator",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Sanitize a list containing email addresses",
 	"author": {
 		"name": "Romain Vialard",
