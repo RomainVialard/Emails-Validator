@@ -6,15 +6,15 @@
  * -- Created for Yet Another Mail Merge --
  *
  * cleanUpEmailList()
+ * isEmail()
  *
- * _validateEmail()
  * _initDiacriticsMap()
  * _removeDiacritics()
  *****************************************************************/
 var EmailsValidator = {};
 
 /**
- * Returns a list of valid email addresses contained in a given string
+ * Compute a list of valid email addresses contained in a given string
  * while accepting the syntax "User Name" <someone@gmail.com>
  
  * @example
@@ -26,15 +26,24 @@ var EmailsValidator = {};
  * EmailsValidator.cleanUpEmailList("me@gmail.com, �l�ve1@gmail.com");
  
  * @param {string} emails - a string containing email addresses
- * @param {boolean} [onlyReturnEmails] - Set to true to remove any associated display name, eg: "toto Shinnigan <user@gmail.com>" --> "user@gmail.com"
- * @param {boolean} [logGarbage] - Log all entries not containing a valid email
- * @param {boolean} [addDisplayNames] - Set to true to generate display names for all addresses, eg: "toto.shinnigan@gmail.com" --> "Toto Shinnigan <toto.shinnigan@gmail.com>"
+ * 
+ * @param {object} [options] - Options for email cleaning
+ * @param {boolean} [options.onlyReturnEmails] - Set to true to remove any associated display name, eg: "toto Shinnigan <user@gmail.com>" --> "user@gmail.com"
+ * @param {boolean} [options.addDisplayNames] - Set to true to generate display names for all addresses, eg: "toto.shinnigan@gmail.com" --> "Toto Shinnigan <toto.shinnigan@gmail.com>"
+ * @param {boolean} [options.logGarbage] - Log all entries not containing a valid email
  *
  * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
  */
-EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbage, addDisplayNames) {
-  if (onlyReturnEmails && addDisplayNames) throw new Error("Can't set both @onlyReturnEmails & @addDisplayNames to true");
-  onlyReturnEmails = onlyReturnEmails || false;
+EmailsValidator.cleanUpEmailList = function (emails, options) {
+  // Set default options value
+  options = {
+    onlyReturnEmails: options.onlyReturnEmails || false,
+    addDisplayNames: options.addDisplayNames || false,
+    logGarbage: options.logGarbage || false
+  };
+  
+  if (options.onlyReturnEmails && options.addDisplayNames) throw new Error("Can't set both @onlyReturnEmails & @addDisplayNames to true");
+  
   
   // Remove double @ (yes, we have to do this...)
   emails = emails.replace('@@', '@');
@@ -60,7 +69,7 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbag
     // Safety check (will happens if no valid localPart is found)
     if (!res){
       // Log for reference
-      logGarbage && console.info({
+      options.logGarbage && console.info({
         message: 'EmailsValidator: invalid field',
         field: field
       });
@@ -78,7 +87,7 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbag
     // no valid email found even after removing the diacritics
     if (!emailRes){
       // Log for reference
-      logGarbage && console.info({
+      options.logGarbage && console.info({
         message: 'EmailsValidator: invalid email',
         email: localPart +'@'+ rest
       });
@@ -90,16 +99,19 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbag
     email = emailRes[0].toLowerCase();
     
     
-    if (!onlyReturnEmails){
+    if (!options.onlyReturnEmails){
       // Try to prepare the displayName if any
       displayName = quotedPart || displayName.replace(/["<>]/g, '').trim();
       
-      if (!displayName && addDisplayNames) {
-        displayName = localPart.replace(/\./g, ' ');
-        // Apply Title Case: toto shinnigan --> Toto Shinnigan
-        displayName = displayName.split(' ').map(function (x) {
-          return x[0].toUpperCase() + x.slice(1)
-        }).join(' ');
+      // Add a displayName from localPart if necessary
+      if (!displayName && options.addDisplayNames) {
+        // Apply Title Case: toto shinnigan-michel --> Toto Shinnigan-Michel
+        displayName = localPart.split('.')
+          .map(function (x) { return x[0].toUpperCase() + x.slice(1) })
+          .join(' ')
+          .split('-')
+          .map(function (x) { return x[0].toUpperCase() + x.slice(1) })
+          .join('-');
       }
         
       displayName && (email ='"'+ displayName +'" <'+ email +'>');
@@ -112,15 +124,6 @@ EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, logGarbag
   return validFields;
 };
 
-
-//<editor-fold desc="# Private methods">
-
-EmailsValidator._REGEX_SEPARATE_EMAILS = /([^@"]*?"([^"]*)"\s+<([^@]+?@[^@]+?)|[^@]+?@[^@]+?)(?:[,;\s\/]+|$)/g;
-EmailsValidator._REGEX_EXTRACT_INFO = /(.*?)((?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*))@(.+)$/;
-EmailsValidator._REGEX_FIND_EMAIL = /[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
-EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
-
-
 /**
  * Check email address validity
  *
@@ -128,10 +131,18 @@ EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
  *
  * @return {Boolean} true if the email address is valid, false otherwise
  */
-EmailsValidator._validateEmail = function (email) {
+EmailsValidator.isEmail = function (email) {
   return EmailsValidator._REGEX_VALID_EMAIL.test(email);
 };
-EmailsValidator._REGEX_VALID_EMAIL = /^(?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*)@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+
+//<editor-fold desc="# Private methods">
+
+EmailsValidator._REGEX_SEPARATE_EMAILS = /([^@"]*?"([^"]*)"\s+<([^@]+?@[^@]+?)|[^@]+?@[^@]+?)(?:[,;\s\/]+|$)/g;
+EmailsValidator._REGEX_EXTRACT_INFO = /(.*?)((?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*))@(.+)$/;
+EmailsValidator._REGEX_FIND_EMAIL =   /[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+EmailsValidator._REGEX_VALID_EMAIL = /^[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
 
 /**
  * Replace accentuated letters (diacritics) by their non-accentuated counter part (� -> a)

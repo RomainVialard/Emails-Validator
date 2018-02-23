@@ -121,8 +121,8 @@
 		    
 		    try {
 		      res = {
-            output: EmailsValidator.cleanUpEmailList(tests[testName]._in, false, true).join(',')
-          };
+            output: EmailsValidator.cleanUpEmailList(tests[testName]._in, { logGarbage: true }).join(',')
+		      };
 		      
 		      if (res.output !== tests[testName].out){
             failed = true;
