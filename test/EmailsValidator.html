@@ -30,12 +30,22 @@
 			color: #00d700;
 		}
 		
+		#allTestState{
+			display: block;
+			padding: 8px;
+		}
+		#allTestState.failed{
+			color: red;
+		}
+		#allTestState.success{
+			color: #00d700;
+		}
+		
 	</style>
 </head>
 <body>
-	<div id="tests">
-		
-	</div>
+	<div id="tests"></div>
+	<div id="allTestState"></div>
 	
 	<script>
 		// All the tests to run
@@ -46,16 +56,24 @@
 		  },
 			emailWithName: {
 		    _in: 'toto Shinnigan <toto.shinnigan@gmail.COM>, otherEmail@test.toto',
-				out: 'toto Shinnigan <toto.shinnigan@gmail.com>,otheremail@test.toto'
+				out: '"toto Shinnigan" <toto.shinnigan@gmail.com>,otheremail@test.toto'
 			},
 			emailSalesForce: {
 		    _in: 'toto Shinnigan <emailtosalesforce@totoazertyui.salesforce.cOm>, otherEmail@test.toto',
-				out: 'toto Shinnigan <emailtosalesforce@totoazertyui.salesforce.com>,otheremail@test.toto'
+				out: '"toto Shinnigan" <emailtosalesforce@totoazertyui.salesforce.com>,otheremail@test.toto'
 		  },
 			diacritics: {
 		    _in: '\u00F2th\u1EC1rEma\u00ECl@t\u0065st.t\u1ED1to',
 				out: 'otheremail@test.toto'
-		  }
+		  },
+			multiSeparator: {
+		    _in: '"Miriam Wallo" <miriam.wallo@toto.Com, toto Shinnigan <toto.shinnigan@gmail.COM>; ôtherEmail@test.toto, yetanotheremail@gmail.com\nazerte@azert.com',
+				out: '"Miriam Wallo" <miriam.wallo@toto.com>,"toto Shinnigan" <toto.shinnigan@gmail.com>,otheremail@test.toto,yetanotheremail@gmail.com,azerte@azert.com'
+			},
+			quote: {
+		    _in: '"ron.vird@gil.com" <ron.lard@gml.com>, aze "ron.vird@gil.com" <ron.lard@gml.com>',
+				out: '"ron.vird@gil.com" <ron.lard@gml.com>,"ron.vird@gil.com" <ron.lard@gml.com>'
+			}
 		};
     
     
@@ -91,6 +109,7 @@
      * @param {Object} tests
      */
 		function runTest(tests){
+		  var testFailed = 0;
 		  
 		  for (var testName in tests){
         var res,
@@ -98,11 +117,12 @@
 		    
 		    try {
 		      res = {
-            output: EmailsValidator.cleanUpEmailList(tests[testName]._in)
+            output: EmailsValidator.cleanUpEmailList(tests[testName]._in, false, true)
           };
 		      
 		      if (res.output !== tests[testName].out){
             failed = true;
+            testFailed += 1;
 		        
             res.expect = tests[testName].out;
           }
@@ -116,6 +136,7 @@
 		      
 		      res = err;
           failed = true;
+          testFailed += 1;
 		    }
 		    
 		    displayTestResult({
@@ -125,6 +146,10 @@
 		    });
 		  }
 		  
+		  var domAllTestState = document.getElementById('allTestState');
+  
+      domAllTestState.innerText = testFailed === 0 ? 'All tests passed with SUCCESS' : testFailed +' tests failed';
+		  domAllTestState.classList.add(testFailed === 0 ? 'success' : 'failed');
 		}
 		
 		runTest(allTests);

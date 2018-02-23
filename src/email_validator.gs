@@ -25,79 +25,91 @@ var EmailsValidator = {};
  * // returns "me@gmail.com,eleve1@gmail.com"
  * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
  
- * @param {String} emails - a string containing email addresses
+ * @param {string} emails - a string containing email addresses
+ * @param {boolean} [onlyReturnEmails] - Set to true to remove any provided names, eg: "toto Shinnigan <toto.shinnigan@gmail.com>" --> "toto.shinnigan@gmail.com"
+ * @param {boolean} [pleaseLogInvalidEmail]
  *
- * @return {String} a list of valid email addresses
+ * @return {string} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
  */
-EmailsValidator.cleanUpEmailList = function (emails) {
-  var tempRecipient = emails;
+EmailsValidator.cleanUpEmailList = function (emails, onlyReturnEmails, pleaseLogInvalidEmail) {
+  onlyReturnEmails = onlyReturnEmails || false;
   
-  // Remove double @ (yes...)
+  // Remove double @ (yes, we have to do this...)
   emails = emails.replace('@@', '@');
   
-  // Count nb of addresses (based on the nb of @)
-  var nbOfEmails = emails.split("@").length - 1;
   // If no @, no valid address, return empty string
-  if (nbOfEmails === 0) return "";
+  if (emails.indexOf('@') === -1) return '';
   
-  // CLEAN-UP recipient email address IF format is not: Full Name <email>
-  if (emails.indexOf('<') === -1) {
-    // Remove all spaces, trailing non alphanumeric char & zero-width space characters
-    // http://stackoverflow.com/questions/11305797/remove-zero-width-space-characters-from-a-javascript-string
-    emails = emails.replace(/\s|[\u200B-\u200D\uFEFF]|\W$/g, '');
+  // One time init the diacritics map
+  EmailsValidator._initDiacriticsMap();
+  
+  var regEmailSeparator = new RegExp(EmailsValidator._REGEX_SEPARATE_EMAILS);
+  var extractRes;
+  var validField = [];
+  
+  // Extract and separate every email like field
+  while (extractRes = regEmailSeparator.exec(emails)){
+    // noinspection JSAnnotator
+    var [/* full matching string */, field, quotedPart, emailPart] = extractRes;
     
-    // Remove accented characters
-    EmailsValidator._initDiacriticsMap();
+    // Search for the email: separate the content
+    var res = EmailsValidator._REGEX_EXTRACT_INFO.exec(emailPart || field);
     
-    emails = EmailsValidator._removeDiacritics(emails);
-  }
-  else {
-    // Check if it's a SalesForce address (usually added as BCC)
-    // In that case, keep only what's inside <>
-    if (emails.indexOf('emailtosalesforce@') !== -1) {
-      var tmpEmails = emails.match(/<[^<>]+>/g);
+    // Safety check (will happens if no valid first email part is found)
+    if (!res){
+      // Log for reference
+      pleaseLogInvalidEmail && console.info({
+        message: 'EmailsValidator: invalid field',
+        field: field
+      });
       
-      emails = '';
-      for (var i1 = 0; i1 < tmpEmails.length; i1++) {
-        emails+= tmpEmails[i1].replace("<", "").replace(">", "") + ",";
-      }
-    }
-  }
-  
-  if (nbOfEmails > 1) {
-    // Make sure addresses are well separated using a comma
-    // GmailApp only allows ',' to separate addresses, not ';'
-    emails = emails.replace(/;/g, ',');
-    
-    // If there are multiple addresses but no ',', check if there's another separator
-    if (emails.indexOf(',') === -1) {
-      // Check if addresses are separated by '/', else try to replace spaces
-      if (emails.indexOf('/') !== -1) {
-        emails = emails.replace(/\//g, ',');
-      }
-      else emails = tempRecipient.replace(/\s/g, ',');
-    }
-  }
-  
-  // Check the validity of each email address IF format is not: Full Name <email>
-  if (emails.indexOf('<') === -1) {
-    var tmp = emails.split(',');
-    var emailArray = [];
-    
-    for (var i = 0; i < tmp.length; i++) {
-      if (EmailsValidator._validateEmail(tmp[i])) {
-        emailArray.push(tmp[i]);
-      }
+      continue;
     }
     
-    emails = emailArray.join(',');
+    // noinspection JSAnnotator
+    var [/* full matching string */, nameInfo, firstEmailPart, rest] = res;
+    
+    // Prepare email part
+    var email = EmailsValidator._removeDiacritics(firstEmailPart +'@'+ rest);
+    var emailRes = EmailsValidator._REGEX_FIND_EMAIL.exec(email);
+    
+    // no valid email found even after removing the diacritics
+    if (!email){
+      // Log for reference
+      pleaseLogInvalidEmail && console.info({
+        message: 'EmailsValidator: invalid email',
+        email: firstEmailPart +'@'+ rest
+      });
+      
+      continue;
+    }
+    
+    // now we at least got a valid email (in lower case)
+    email = emailRes[0].toLowerCase();
+    
+    
+    if (!onlyReturnEmails){
+      // Try to prepare the nameInfo if any
+      nameInfo = quotedPart || nameInfo.replace(/["<>]/g, '').trim();
+      
+      nameInfo && (email ='"'+ nameInfo +'" <'+ email +'>');
+    }
+    
+    // Save final result
+    validField.push(email);
   }
   
-  return emails;
+  return validField.join(',');
 };
 
 
 //<editor-fold desc="# Private methods">
+
+EmailsValidator._REGEX_SEPARATE_EMAILS = /([^@"]*?"([^"]*)"\s+<([^@]+?@[^@]+?)|[^@]+?@[^@]+?)(?:[,;\s\/]+|$)/g;
+EmailsValidator._REGEX_EXTRACT_INFO = /(.*?)((?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*))@(.+)$/;
+EmailsValidator._REGEX_FIND_EMAIL = /(?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*)@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
+
 
 /**
  * Check email address validity
@@ -109,7 +121,7 @@ EmailsValidator.cleanUpEmailList = function (emails) {
 EmailsValidator._validateEmail = function (email) {
   return EmailsValidator._REGEX_VALID_EMAIL.test(email);
 };
-EmailsValidator._REGEX_VALID_EMAIL = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+EmailsValidator._REGEX_VALID_EMAIL = /^(?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*)@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 /**
  * Replace accentuated letters (diacritics) by their non-accentuated counter part (à -> a)
