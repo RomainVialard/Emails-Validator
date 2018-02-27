@@ -6,6 +6,7 @@
  * -- Created for Yet Another Mail Merge --
  *
  * cleanUpEmailList()
+ * generateDisplayName()
  * isEmail()
  *
  * _initDiacriticsMap()
