@@ -134,12 +134,16 @@ EmailsValidator.generateDisplayName = function(email) {
   
   // Capitalize by '.' and replace '.' by spaces
   var displayName = localPart.split('.')
-    .map(function (x) { return x[0].toUpperCase() + x.slice(1) })
+    .map(function (x) { 
+      if (x) return x[0].toUpperCase() + x.slice(1) 
+    })
     .join(' ');
   
   // Capitalize by '-'
   displayName = displayName.split('-')
-    .map(function (x) { return x[0].toUpperCase() + x.slice(1) })
+    .map(function (x) { 
+      if (x) return x[0].toUpperCase() + x.slice(1) 
+    })
     .join('-');
   
   return displayName;
