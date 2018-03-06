@@ -17,7 +17,7 @@ var EmailsValidator = {};
 /**
  * Compute a list of valid email addresses contained in a given string
  * while accepting the syntax "User Name" <someone@gmail.com>
- 
+
  * @example
  * // returns "me@gmail.com,other@gmail.com"
  * EmailsValidator.cleanUpEmailList("me@gmail.com, some text, other@gmail.com");
@@ -25,12 +25,13 @@ var EmailsValidator = {};
  * @example
  * // returns "me@gmail.com,eleve1@gmail.com"
  * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
- 
+
  * @param {string} emails - a string containing email addresses
  *
  * @param {object} [options] - Options for email cleaning
  * @param {boolean} [options.onlyReturnEmails] - Set to true to remove any associated display name, eg: toto Shinnigan <user@gmail.com> --> user@gmail.com
  * @param {boolean} [options.addDisplayNames] - Set to true to generate display names for all addresses, eg: toto.shinnigan@gmail.com --> "Toto Shinnigan" <toto.shinnigan@gmail.com>
+ * @param {boolean} [options.onlyReturnNames] - Set to true to remove any associated display email, eg:  toto Shinnigan <user@gmail.com> --> toto Shinnigan
  * @param {boolean} [options.logGarbage] - Log all entries not containing a valid email
  *
  * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
@@ -38,36 +39,39 @@ var EmailsValidator = {};
 EmailsValidator.cleanUpEmailList = function (emails, options) {
   // Set default options value
   options = options || {};
+  if(options.onlyReturnNames) options.addDisplayNames = true;
   options = {
     onlyReturnEmails: options.onlyReturnEmails || false,
     addDisplayNames: options.addDisplayNames || false,
-    logGarbage: options.logGarbage || false
+    logGarbage: options.logGarbage || false,
+    onlyReturnNames: options.onlyReturnNames || false
   };
-  
+
+
   if (options.onlyReturnEmails && options.addDisplayNames) throw new Error("Can't set both @onlyReturnEmails & @addDisplayNames to true");
-  
-  
+
+
   // Remove double @ (yes, we have to do this...)
   emails = emails.replace('@@', '@');
-  
+
   // If no @, no valid address, quit early
   if (emails.indexOf('@') === -1) return [];
-  
+
   // One time init the diacritics map
   EmailsValidator._initDiacriticsMap();
-  
+
   var regEmailSeparator = new RegExp(EmailsValidator._REGEX_SEPARATE_EMAILS);
   var extractRes;
   var validFields = [];
-  
+
   // Extract and separate every email like field
   while (extractRes = regEmailSeparator.exec(emails)){
     // noinspection JSAnnotator
     var [/* full matching string */, field, quotedPart, emailPart] = extractRes;
-    
+
     // Search for the email: separate the content
     var res = EmailsValidator._REGEX_EXTRACT_INFO.exec(emailPart || field);
-    
+
     // Safety check (will happens if no valid localPart is found)
     if (!res){
       // Log for reference
@@ -75,17 +79,17 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
         message: 'EmailsValidator: invalid field',
         field: field
       });
-      
+
       continue;
     }
-    
+
     // noinspection JSAnnotator
     var [/* full matching string */, displayName, localPart, rest] = res;
-    
+
     // Prepare email part
     var email = EmailsValidator._removeDiacritics(localPart +'@'+ rest);
     var emailRes = EmailsValidator._REGEX_FIND_EMAIL.exec(email);
-    
+
     // no valid email found even after removing the diacritics
     if (!emailRes){
       // Log for reference
@@ -93,31 +97,35 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
         message: 'EmailsValidator: invalid email',
         email: localPart +'@'+ rest
       });
-      
+
       continue;
     }
-    
+
     // now we at least got a valid email (in lower case)
     email = emailRes[0].toLowerCase();
-    
-    
+
     if (!options.onlyReturnEmails){
       // Try to prepare the displayName if any
       displayName = quotedPart || displayName.replace(/["<>]/g, '').trim();
-      
+
       // Add a displayName from localPart if necessary
       if (!displayName && options.addDisplayNames) {
         // Apply Title Case: toto shinnigan-michel --> Toto Shinnigan-Michel
         displayName = EmailsValidator.generateDisplayName(localPart);
       }
-      
-      displayName && (email ='"'+ displayName +'" <'+ email +'>');
+
+      if(options.onlyReturnNames){
+        displayName && (email = displayName);
+      }
+      else {
+        displayName && (email ='"'+ displayName +'" <'+ email +'>');
+      }
     }
-    
+
     // Save final result
     validFields.push(email);
   }
-  
+
   return validFields;
 };
 
@@ -131,21 +139,21 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
  */
 EmailsValidator.generateDisplayName = function(email) {
   var localPart = email.split('@')[0];
-  
+
   // Capitalize by '.' and replace '.' by spaces
   var displayName = localPart.split('.')
-    .map(function (x) {
-      return x && x[0].toUpperCase() + x.slice(1) 
-    })
-    .join(' ');
-  
+  .map(function (x) {
+    return x && x[0].toUpperCase() + x.slice(1)
+  })
+  .join(' ');
+
   // Capitalize by '-'
   displayName = displayName.split('-')
-    .map(function (x) {
-      return x && x[0].toUpperCase() + x.slice(1) 
-    })
-    .join('-');
-  
+  .map(function (x) {
+    return x && x[0].toUpperCase() + x.slice(1)
+  })
+  .join('-');
+
   return displayName;
 };
 
@@ -181,12 +189,12 @@ EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
  */
 EmailsValidator._removeDiacritics = function (str) {
   var res = str.toLowerCase();
-  
+
   // Replace all char except the first 127 ASCII char
   res = res.replace(/[^\u0000-\u007E]/g, function (a) {
     return EmailsValidator._diacriticsMap[a] || a;
   });
-  
+
   return res;
 };
 
@@ -200,18 +208,18 @@ EmailsValidator._initDiacriticsMap = function () {
   if (EmailsValidator._diacriticsMap) {
     return;
   }
-  
+
   // build diacritics map
   var diacriticsMap = {};
-  
+
   for (var i = 0; i < EmailsValidator._DEFAULT_DIACRITICS.length; i++) {
     var letters = EmailsValidator._DEFAULT_DIACRITICS[i].letters;
-    
+
     for (var j = 0; j < letters.length; j++) {
       diacriticsMap[letters[j]] = EmailsValidator._DEFAULT_DIACRITICS[i].base;
     }
   }
-  
+
   EmailsValidator._diacriticsMap = diacriticsMap;
 };
 EmailsValidator._DEFAULT_DIACRITICS = [
