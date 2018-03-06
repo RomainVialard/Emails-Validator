@@ -31,6 +31,7 @@ var EmailsValidator = {};
  * @param {object} [options] - Options for email cleaning
  * @param {boolean} [options.onlyReturnEmails] - Set to true to remove any associated display name, eg: toto Shinnigan <user@gmail.com> --> user@gmail.com
  * @param {boolean} [options.addDisplayNames] - Set to true to generate display names for all addresses, eg: toto.shinnigan@gmail.com --> "Toto Shinnigan" <toto.shinnigan@gmail.com>
+ * @param {boolean} [options.onlyReturnNames] - Set to true to remove any associated display email, eg:  toto Shinnigan <user@gmail.com> --> toto Shinnigan
  * @param {boolean} [options.logGarbage] - Log all entries not containing a valid email
  *
  * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
@@ -38,10 +39,12 @@ var EmailsValidator = {};
 EmailsValidator.cleanUpEmailList = function (emails, options) {
   // Set default options value
   options = options || {};
+  if(options.onlyReturnNames) options.addDisplayNames = true;
   options = {
     onlyReturnEmails: options.onlyReturnEmails || false,
     addDisplayNames: options.addDisplayNames || false,
-    logGarbage: options.logGarbage || false
+    logGarbage: options.logGarbage || false,
+    onlyReturnNames: options.onlyReturnNames || false
   };
   
   if (options.onlyReturnEmails && options.addDisplayNames) throw new Error("Can't set both @onlyReturnEmails & @addDisplayNames to true");
@@ -111,7 +114,12 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
         displayName = EmailsValidator.generateDisplayName(localPart);
       }
       
-      displayName && (email ='"'+ displayName +'" <'+ email +'>');
+      if(options.onlyReturnNames) {
+        displayName && (email = displayName);
+      }
+      else {
+        displayName && (email ='"'+ displayName +'" <'+ email +'>');
+      }
     }
     
     // Save final result
