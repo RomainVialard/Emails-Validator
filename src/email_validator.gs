@@ -29,9 +29,9 @@ var EmailsValidator = {};
  * @param {string} emails - a string containing email addresses
  *
  * @param {object} [options] - Options for email cleaning
- * @param {boolean} [options.onlyReturnEmails] - Set to true to remove any associated display name, eg: toto Shinnigan <toto.shinnigan@gmail.com> --> toto.shinnigan@gmail.com
+ * @param {boolean} [options.onlyReturnEmails] - Set to true to remove any associated display name, eg: toto Shinnigan <user@gmail.com> --> user@gmail.com
  * @param {boolean} [options.addDisplayNames] - Set to true to generate display names for all addresses, eg: toto.shinnigan@gmail.com --> "Toto Shinnigan" <toto.shinnigan@gmail.com>
- * @param {boolean} [options.onlyReturnNames] - Set to true to remove any associated display email, eg:  toto Shinnigan <toto.shinnigan@gmail.com> --> toto Shinnigan
+ * @param {boolean} [options.onlyReturnNames] - Set to true to remove any associated display email, eg:  toto.shinnigan@gmail.com --> Toto Shinnigan, eg: "John Doe" <toto.shinnigan@gmail.com> --> John Doe
  * @param {boolean} [options.logGarbage] - Log all entries not containing a valid email
  *
  * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
