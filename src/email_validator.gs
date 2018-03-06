@@ -114,11 +114,11 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
         displayName = EmailsValidator.generateDisplayName(localPart);
       }
       
-      if(options.onlyReturnNames) {
-        displayName && (email = displayName);
+      if(options.onlyReturnNames && displayName) {
+         email = displayName;
       }
-      else {
-        displayName && (email ='"'+ displayName +'" <'+ email +'>');
+      else if(displayName) {
+         email ='"'+ displayName +'" <'+ email +'>';
       }
     }
     
