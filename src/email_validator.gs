@@ -145,6 +145,13 @@ EmailsValidator.generateDisplayName = function(email) {
       return x && x[0].toUpperCase() + x.slice(1) 
     })
     .join('-');
+
+    // Capitalize by '_'
+    displayName = displayName.split('_')
+    .map(function (x) {
+      return x && x[0].toUpperCase() + x.slice(1)
+    })
+    .join(' ');
   
   return displayName;
 };
