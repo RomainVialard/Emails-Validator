@@ -30,6 +30,7 @@ var EmailsValidator = {};
  *
  * @param {object} [options] - Options for email cleaning
  * @param {boolean} [options.onlyReturnEmails] - Set to true to remove any associated display name, eg: toto Shinnigan <user@gmail.com> --> user@gmail.com
+ * @param {boolean} [options.onlyReturnNames] - Set to true to remove any associated display email, eg:  toto.shinnigan@gmail.com --> Toto Shinnigan, eg: "John Doe" <toto.shinnigan@gmail.com> --> John Doe
  * @param {boolean} [options.addDisplayNames] - Set to true to generate display names for all addresses, eg: toto.shinnigan@gmail.com --> "Toto Shinnigan" <toto.shinnigan@gmail.com>
  * @param {boolean} [options.logGarbage] - Log all entries not containing a valid email
  *
@@ -40,7 +41,8 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
   options = options || {};
   options = {
     onlyReturnEmails: options.onlyReturnEmails || false,
-    addDisplayNames: options.addDisplayNames || false,
+    onlyReturnNames: options.onlyReturnNames || false,
+    addDisplayNames: options.onlyReturnNames || options.addDisplayNames || false,
     logGarbage: options.logGarbage || false
   };
   
@@ -111,7 +113,11 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
         displayName = EmailsValidator.generateDisplayName(localPart);
       }
       
-      displayName && (email ='"'+ displayName +'" <'+ email +'>');
+      if (displayName) {
+        email = options.onlyReturnNames
+          ? displayName
+          : '"'+ displayName +'" <'+ email +'>';
+      }
     }
     
     // Save final result
