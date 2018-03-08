@@ -132,8 +132,8 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
 EmailsValidator.generateDisplayName = function(email) {
   var localPart = email.split('@')[0];
   
-  // Capitalize by '.' and replace '.' by spaces
-  var displayName = localPart.split('.')
+  // Capitalize by '.' | '_' and replace by spaces
+  var displayName = localPart.split(/[._]/)
     .map(function (x) {
       return x && x[0].toUpperCase() + x.slice(1) 
     })
@@ -142,16 +142,9 @@ EmailsValidator.generateDisplayName = function(email) {
   // Capitalize by '-'
   displayName = displayName.split('-')
     .map(function (x) {
-      return x && x[0].toUpperCase() + x.slice(1) 
-    })
-    .join('-');
-
-    // Capitalize by '_'
-    displayName = displayName.split('_')
-    .map(function (x) {
       return x && x[0].toUpperCase() + x.slice(1)
     })
-    .join(' ');
+    .join('-');
   
   return displayName;
 };
