@@ -1,5 +1,6 @@
 /****************************************************************
  * EmailsValidator library
+ * https://github.com/RomainVialard/Emails-Validator
  *
  * Returns a list of valid email addresses
  * contained in a given string
