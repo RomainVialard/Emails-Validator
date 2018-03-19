@@ -13,12 +13,12 @@
  * _initDiacriticsMap()
  * _removeDiacritics()
  *****************************************************************/
-var EmailsValidator = {};
+var EmailsValidator_ = {};
 
 /**
  * Compute a list of valid email addresses contained in a given string
  * while accepting the syntax "User Name" <someone@gmail.com>
- 
+ *
  * @example
  * // returns "me@gmail.com,other@gmail.com"
  * EmailsValidator.cleanUpEmailList("me@gmail.com, some text, other@gmail.com");
@@ -26,7 +26,8 @@ var EmailsValidator = {};
  * @example
  * // returns "me@gmail.com,eleve1@gmail.com"
  * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
- 
+ * 
+ * @param
  * @param {string} emails - a string containing email addresses
  *
  * @param {object} [options] - Options for email cleaning
@@ -35,9 +36,9 @@ var EmailsValidator = {};
  * @param {boolean} [options.addDisplayNames] - Set to true to generate display names for all addresses, eg: toto.shinnigan@gmail.com --> "Toto Shinnigan" <toto.shinnigan@gmail.com>
  * @param {boolean} [options.logGarbage] - Log all entries not containing a valid email
  *
- * @return {Array.<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
+ * @return {Array<string>} a list of valid email addresses, can be formatted like: "Name Name" <email@domain.com>
  */
-EmailsValidator.cleanUpEmailList = function (emails, options) {
+function cleanUpEmailList(emails, options) {
   // Set default options value
   options = options || {};
   options = {
@@ -57,9 +58,9 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
   if (emails.indexOf('@') === -1) return [];
   
   // One time init the diacritics map
-  EmailsValidator._initDiacriticsMap();
+  EmailsValidator_._initDiacriticsMap();
   
-  var regEmailSeparator = new RegExp(EmailsValidator._REGEX_SEPARATE_EMAILS);
+  var regEmailSeparator = new RegExp(EmailsValidator_._REGEX_SEPARATE_EMAILS);
   var extractRes;
   var validFields = [];
   
@@ -69,7 +70,7 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
     var [/* full matching string */, field, quotedPart, emailPart] = extractRes;
     
     // Search for the email: separate the content
-    var res = EmailsValidator._REGEX_EXTRACT_INFO.exec(emailPart || field);
+    var res = EmailsValidator_._REGEX_EXTRACT_INFO.exec(emailPart || field);
     
     // Safety check (will happens if no valid localPart is found)
     if (!res){
@@ -86,8 +87,8 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
     var [/* full matching string */, displayName, localPart, rest] = res;
     
     // Prepare email part
-    var email = EmailsValidator._removeDiacritics(localPart +'@'+ rest);
-    var emailRes = EmailsValidator._REGEX_FIND_EMAIL.exec(email);
+    var email = EmailsValidator_._removeDiacritics(localPart +'@'+ rest);
+    var emailRes = EmailsValidator_._REGEX_FIND_EMAIL.exec(email);
     
     // no valid email found even after removing the diacritics
     if (!emailRes){
@@ -111,7 +112,7 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
       // Add a displayName from localPart if necessary
       if (!displayName && options.addDisplayNames) {
         // Apply Title Case: toto shinnigan-michel --> Toto Shinnigan-Michel
-        displayName = EmailsValidator.generateDisplayName(localPart);
+        displayName = EmailsValidator_.generateDisplayName(localPart);
       }
       
       if (displayName) {
@@ -136,7 +137,7 @@ EmailsValidator.cleanUpEmailList = function (emails, options) {
  *
  * @return {string} name extracted from email ("example.foo@domain.com" --> "Example Foo")
  */
-EmailsValidator.generateDisplayName = function(email) {
+function generateDisplayName(email) {
   var localPart = email.split('@')[0];
   
   // Capitalize by '.' | '_' and replace by spaces
@@ -163,18 +164,25 @@ EmailsValidator.generateDisplayName = function(email) {
  *
  * @return {Boolean} true if the email address is valid, false otherwise
  */
-EmailsValidator.isEmail = function (email) {
-  return EmailsValidator._REGEX_VALID_EMAIL.test(email);
+function isEmail(email) {
+  return EmailsValidator_._REGEX_VALID_EMAIL.test(email);
 };
 
+// noinspection JSUnusedGlobalSymbols, ThisExpressionReferencesGlobalObjectJS
+this['EmailsValidator'] = {
+  // Add local alias to run the library as normal code
+  cleanUpEmailList: cleanUpEmailList,
+  generateDisplayName: generateDisplayName,
+  isEmail: isEmail
+};
 
 //<editor-fold desc="# Private methods">
 
-EmailsValidator._REGEX_SEPARATE_EMAILS = /([^@"]*?"([^"]*)"\s+<([^@]+?@[^@]+?)|[^@]+?@[^@]+?)(?:[,;\s\/]+|$)/g;
-EmailsValidator._REGEX_EXTRACT_INFO = /(.*?)((?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*))@(.+)$/;
-EmailsValidator._REGEX_FIND_EMAIL =   /[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
-EmailsValidator._REGEX_VALID_EMAIL = /^[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
+EmailsValidator_._REGEX_SEPARATE_EMAILS = /([^@"]*?"([^"]*)"\s+<([^@]+?@[^@]+?)|[^@]+?@[^@]+?)(?:[,;\s\/]+|$)/g;
+EmailsValidator_._REGEX_EXTRACT_INFO = /(.*?)((?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*))@(.+)$/;
+EmailsValidator_._REGEX_FIND_EMAIL =   /[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+EmailsValidator_._REGEX_VALID_EMAIL = /^[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+EmailsValidator_._REGEX_CLEAN_NAME_INFO = /["<>]/g;
 
 /**
  * Replace accentuated letters (diacritics) by their non-accentuated counter part (à -> a)
@@ -186,12 +194,12 @@ EmailsValidator._REGEX_CLEAN_NAME_INFO = /["<>]/g;
  * @return {string}
  * @private
  */
-EmailsValidator._removeDiacritics = function (str) {
+EmailsValidator_._removeDiacritics = function (str) {
   var res = str.toLowerCase();
   
   // Replace all char except the first 127 ASCII char
   res = res.replace(/[^\u0000-\u007E]/g, function (a) {
-    return EmailsValidator._diacriticsMap[a] || a;
+    return EmailsValidator_._diacriticsMap[a] || a;
   });
   
   return res;
@@ -202,26 +210,26 @@ EmailsValidator._removeDiacritics = function (str) {
  *
  * @private
  */
-EmailsValidator._initDiacriticsMap = function () {
+EmailsValidator_._initDiacriticsMap = function () {
   // Skip if done
-  if (EmailsValidator._diacriticsMap) {
+  if (EmailsValidator_._diacriticsMap) {
     return;
   }
   
   // build diacritics map
   var diacriticsMap = {};
   
-  for (var i = 0; i < EmailsValidator._DEFAULT_DIACRITICS.length; i++) {
-    var letters = EmailsValidator._DEFAULT_DIACRITICS[i].letters;
+  for (var i = 0; i < EmailsValidator_._DEFAULT_DIACRITICS.length; i++) {
+    var letters = EmailsValidator_._DEFAULT_DIACRITICS[i].letters;
     
     for (var j = 0; j < letters.length; j++) {
-      diacriticsMap[letters[j]] = EmailsValidator._DEFAULT_DIACRITICS[i].base;
+      diacriticsMap[letters[j]] = EmailsValidator_._DEFAULT_DIACRITICS[i].base;
     }
   }
   
-  EmailsValidator._diacriticsMap = diacriticsMap;
+  EmailsValidator_._diacriticsMap = diacriticsMap;
 };
-EmailsValidator._DEFAULT_DIACRITICS = [
+EmailsValidator_._DEFAULT_DIACRITICS = [
   {
     'base': 'a',
     'letters': '\u0061\u24D0\uFF41\u1E9A\u00E0\u00E1\u00E2\u1EA7\u1EA5\u1EAB\u1EA9\u00E3\u0101\u0103\u1EB1\u1EAF\u1EB5\u1EB3\u0227\u01E1\u00E4\u01DF\u1EA3\u00E5\u01FB\u01CE\u0201\u0203\u1EA1\u1EAD\u1EB7\u1E01\u0105\u2C65\u0250'
