@@ -112,7 +112,7 @@ function cleanUpEmailList(emails, options) {
       // Add a displayName from localPart if necessary
       if (!displayName && options.addDisplayNames) {
         // Apply Title Case: toto shinnigan-michel --> Toto Shinnigan-Michel
-        displayName = EmailsValidator_.generateDisplayName(localPart);
+        displayName = generateDisplayName(localPart);
       }
       
       if (displayName) {
