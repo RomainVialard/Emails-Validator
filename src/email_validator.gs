@@ -27,7 +27,7 @@ var EmailsValidator_ = {};
  * // returns "me@gmail.com,eleve1@gmail.com"
  * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
  * 
- * @param
+ * @params
  * @param {string} emails - a string containing email addresses
  *
  * @param {object} [options] - Options for email cleaning
@@ -127,7 +127,7 @@ function cleanUpEmailList(emails, options) {
   }
   
   return validFields;
-};
+}
 
 /**
  * Generate a display name from the local part of an email.
@@ -155,7 +155,7 @@ function generateDisplayName(email) {
     .join('-');
   
   return displayName;
-};
+}
 
 /**
  * Check email address validity
@@ -166,7 +166,7 @@ function generateDisplayName(email) {
  */
 function isEmail(email) {
   return EmailsValidator_._REGEX_VALID_EMAIL.test(email);
-};
+}
 
 // noinspection JSUnusedGlobalSymbols, ThisExpressionReferencesGlobalObjectJS
 this['EmailsValidator'] = {
@@ -192,7 +192,6 @@ EmailsValidator_._REGEX_CLEAN_NAME_INFO = /["<>]/g;
  * @param {string} str
  *
  * @return {string}
- * @private
  */
 EmailsValidator_._removeDiacritics = function (str) {
   var res = str.toLowerCase();
@@ -207,8 +206,6 @@ EmailsValidator_._removeDiacritics = function (str) {
 
 /**
  * One time initialization of the diacritics maps
- *
- * @private
  */
 EmailsValidator_._initDiacriticsMap = function () {
   // Skip if done
