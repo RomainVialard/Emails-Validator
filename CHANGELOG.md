@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- Add new, unreleased changes here. -->
 * none
 
+## [1.2.2] - in GAS v12 - 2018-03-20
+* Fix incorrect generateDisplayName() call
+
 ## [1.2.1] - in GAS v11 - 2018-03-19
 * Updated for use as an Apps Script library
 
