@@ -12,8 +12,8 @@
  *
  * _initDiacriticsMap()
  * _removeDiacritics()
- *****************************************************************/
-var EmailsValidator_ = {};
+ *****************************************************************//**/
+
 
 /**
  * Compute a list of valid email addresses contained in a given string
@@ -26,7 +26,7 @@ var EmailsValidator_ = {};
  * @example
  * // returns "me@gmail.com,eleve1@gmail.com"
  * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
- * 
+ *
  * @params
  * @param {string} emails - a string containing email addresses
  *
@@ -143,7 +143,7 @@ function generateDisplayName(email) {
   // Capitalize by '.' | '_' and replace by spaces
   var displayName = localPart.split(/[._]/)
     .map(function (x) {
-      return x && x[0].toUpperCase() + x.slice(1) 
+      return x && x[0].toUpperCase() + x.slice(1)
     })
     .join(' ');
   
@@ -168,6 +168,7 @@ function isEmail(email) {
   return EmailsValidator_._REGEX_VALID_EMAIL.test(email);
 }
 
+
 // noinspection JSUnusedGlobalSymbols, ThisExpressionReferencesGlobalObjectJS
 this['EmailsValidator'] = {
   // Add local alias to run the library as normal code
@@ -176,7 +177,10 @@ this['EmailsValidator'] = {
   isEmail: isEmail
 };
 
+
 //<editor-fold desc="# Private methods">
+
+var EmailsValidator_ = {};
 
 EmailsValidator_._REGEX_SEPARATE_EMAILS = /([^@"]*?"([^"]*)"\s+<([^@]+?@[^@]+?)|[^@]+?@[^@]+?)(?:[,;\s\/]+|$)/g;
 EmailsValidator_._REGEX_EXTRACT_INFO = /(.*?)((?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*))@(.+)$/;
