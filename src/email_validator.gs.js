@@ -154,6 +154,10 @@ function generateDisplayName(email) {
     })
     .join('-');
   
+  // Remove trailing numbers
+  // john.doe0149@gmail.com >> John Doe0149 >> John Doe
+  displayName = displayName.replace(/\d+$/, "");
+  
   return displayName;
 }
 
