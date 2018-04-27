@@ -1,6 +1,6 @@
 {
 	"name": "@scriptaddicts/gas-email-validator",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"description": "Sanitize a list containing email addresses",
 	"license": "Apache-2.0",
 	"author": {
