@@ -70,8 +70,8 @@ function cleanUpEmailList(emails, options) {
     // noinspection JSAnnotator
     var [/* full matching string */, field, quotedPart, emailPart] = extractRes;
     
-    // Search for the email: separate the content
-    var res = EmailsValidator_._REGEX_EXTRACT_INFO.exec(emailPart || field);
+    // Search for the email: remove white spaces, then separate the content
+    var res = EmailsValidator_._REGEX_EXTRACT_INFO.exec((emailPart || field).replace(/\s/g, ''));
     
     // Safety check (will happens if no valid localPart is found)
     if (!res){
@@ -135,10 +135,10 @@ function cleanUpEmailList(emails, options) {
  *
  * @param {string} potentially dirty email address
  *
- * @return {string} cleaned-up email address ("Hervé.Du Chène@gmail.com" --> "Example Foo") or null
+ * @return {string} cleaned-up email address ("Hervé.Du Chène@gmail.com" --> "herve.duchene@gmail.com") or null
  */
 function cleanUpSingleAddress(email) {
-  return cleanUpEmailList(email.replace(/\s/g, ''), {
+  return cleanUpEmailList(email, {
     onlyReturnEmails: true
   })[0];
 }
