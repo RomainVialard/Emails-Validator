@@ -1,5 +1,5 @@
 /****************************************************************
- * EmailsValidator library
+ * EmailsValidator library 
  * https://github.com/RomainVialard/Emails-Validator
  *
  * Returns a list of valid email addresses
@@ -7,6 +7,7 @@
  * -- Created for Yet Another Mail Merge --
  *
  * cleanUpEmailList()
+ * cleanUpSingleAddress()
  * generateDisplayName()
  * isEmail()
  *
@@ -20,11 +21,11 @@
  * while accepting the syntax "User Name" <someone@gmail.com>
  *
  * @example
- * // returns "me@gmail.com,other@gmail.com"
+ * // returns ["me@gmail.com", "other@gmail.com"]
  * EmailsValidator.cleanUpEmailList("me@gmail.com, some text, other@gmail.com");
  *
  * @example
- * // returns "me@gmail.com,eleve1@gmail.com"
+ * // returns ["me@gmail.com", "eleve1@gmail.com"]
  * EmailsValidator.cleanUpEmailList("me@gmail.com, élève1@gmail.com");
  *
  * @params
@@ -69,8 +70,8 @@ function cleanUpEmailList(emails, options) {
     // noinspection JSAnnotator
     var [/* full matching string */, field, quotedPart, emailPart] = extractRes;
     
-    // Search for the email: separate the content
-    var res = EmailsValidator_._REGEX_EXTRACT_INFO.exec(emailPart || field);
+    // Search for the email: remove white spaces, then separate the content
+    var res = EmailsValidator_._REGEX_EXTRACT_INFO.exec((emailPart || field).replace(/\s/g, ''));
     
     // Safety check (will happens if no valid localPart is found)
     if (!res){
@@ -130,6 +131,19 @@ function cleanUpEmailList(emails, options) {
 }
 
 /**
+ * Clean up a single email address by removing white-space characters
+ *
+ * @param {string} potentially dirty email address
+ *
+ * @return {string} cleaned-up email address ("Hervé.Du Chène@gmail.com" --> "herve.duchene@gmail.com") or null
+ */
+function cleanUpSingleAddress(email) {
+  return cleanUpEmailList(email, {
+    onlyReturnEmails: true
+  })[0];
+}
+
+/**
  * Generate a display name from the local part of an email.
  * Words will be capitalized when separated by '.' or '-'
  *
@@ -177,6 +191,7 @@ function isEmail(email) {
 this['EmailsValidator'] = {
   // Add local alias to run the library as normal code
   cleanUpEmailList: cleanUpEmailList,
+  cleanUpSingleAddress: cleanUpSingleAddress,
   generateDisplayName: generateDisplayName,
   isEmail: isEmail
 };
@@ -281,7 +296,7 @@ EmailsValidator_._DEFAULT_DIACRITICS = [
   },
   {
     'base': 'e',
-    'letters': '\u0065\u24D4\uFF45\u00E8\u0065\u00EA\u1EC1\u1EBF\u1EC5\u1EC3\u1EBD\u0113\u1E15\u1E17\u0115\u0117\u00EB\u1EBB\u011B\u0205\u0207\u1EB9\u1EC7\u0229\u1E1D\u0119\u1E19\u1E1B\u0247\u025B\u01DD'
+    'letters': '\u00E9\u0065\u24D4\uFF45\u00E8\u0065\u00EA\u1EC1\u1EBF\u1EC5\u1EC3\u1EBD\u0113\u1E15\u1E17\u0115\u0117\u00EB\u1EBB\u011B\u0205\u0207\u1EB9\u1EC7\u0229\u1E1D\u0119\u1E19\u1E1B\u0247\u025B\u01DD'
   },
   {
     'base': 'f',
